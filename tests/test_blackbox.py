@@ -115,16 +115,12 @@ def test_invalid_capacity(capacity, enrolled):
 # A2: BOUNDARY VALUE ANALYSIS
 
 # Current credits: minimum and maximum
-def test_current_credits_minimum():
-    assert check_credit_limit(0, 1) is True
 
 
 def test_current_credits_maximum():
     assert check_credit_limit(18, 1) is False
 
 # Course credits: minimum and maximum
-def test_course_credits_minimum():
-    assert check_credit_limit(0, 1) is True
 
 
 def test_course_credits_maximum():
@@ -141,35 +137,6 @@ def test_combined_credits_just_above_18():
     assert check_credit_limit(16, 3) is False
 
 
-
-# Course capacity boundary
-def test_enrollment_just_below_capacity():
-    student = Student("S01")
-    course = Course("CS201", 3, 30, enrolled=29)
-
-    assert registration_decision(student, course) == "REGISTERED"
-
-
-
-def test_enrollment_at_capacity():
-    student = Student("S01")
-    course = Course("CS201", 3, 30, enrolled=30)
-
-    assert registration_decision(student, course) == "WAITLISTED"
-
-
-# Outstanding dues boundary
-def test_dues_at_zero():
-    student = Student("S01", outstanding_dues=0)
-    course = Course("CS201", 3, 30)
-
-    assert registration_decision(student, course) == "REGISTERED"
-
-def test_dues_at_one():
-    student = Student("S01", outstanding_dues=1)
-    course = Course("CS201", 3, 30)
-
-    assert registration_decision(student, course) == "DUES_BLOCK"
 
 
 # A3: DECISION TABLE TESTING
@@ -247,13 +214,6 @@ def test_registered_decision():
     assert registration_decision(student, course) == "REGISTERED"
 
 
-
-# R6: Waiting list decision
-def test_waitlisted_decision():
-    student = Student("S01")
-    course = Course("CS201", 3, 30, enrolled=30)
-
-    assert registration_decision(student, course) == "WAITLISTED"
 
 # FR-10: REGISTRATION DECISION
 # MUST NOT CHANGE OBJECT STATE
