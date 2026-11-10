@@ -111,3 +111,146 @@ def test_invalid_capacity(capacity, enrolled):
 
     with pytest.raises(ValueError, match="Invalid capacity or enrollment"):
         registration_decision(student, course)
+
+# A2: BOUNDARY VALUE ANALYSIS
+
+# Current credits: minimum and maximum
+def test_current_credits_minimum():
+    assert check_credit_limit(0, 1) is True
+
+
+def test_current_credits_maximum():
+    assert check_credit_limit(18, 1) is False
+
+# Course credits: minimum and maximum
+def test_course_credits_minimum():
+    assert check_credit_limit(0, 1) is True
+
+
+def test_course_credits_maximum():
+    assert check_credit_limit(0, 4) is True
+
+
+
+# Combined credits: exactly 18 and just above 18
+def test_combined_credits_exactly_18():
+    assert check_credit_limit(15, 3) is True
+
+
+def test_combined_credits_just_above_18():
+    assert check_credit_limit(16, 3) is False
+
+
+
+# Course capacity boundary
+def test_enrollment_just_below_capacity():
+    student = Student("S01")
+    course = Course("CS201", 3, 30, enrolled=29)
+
+    assert registration_decision(student, course) == "REGISTERED"
+
+
+
+def test_enrollment_at_capacity():
+    student = Student("S01")
+    course = Course("CS201", 3, 30, enrolled=30)
+
+    assert registration_decision(student, course) == "WAITLISTED"
+
+
+# Outstanding dues boundary
+def test_dues_at_zero():
+    student = Student("S01", outstanding_dues=0)
+    course = Course("CS201", 3, 30)
+
+    assert registration_decision(student, course) == "REGISTERED"
+
+def test_dues_at_one():
+    student = Student("S01", outstanding_dues=1)
+    course = Course("CS201", 3, 30)
+
+    assert registration_decision(student, course) == "DUES_BLOCK"
+
+
+# A3: DECISION TABLE TESTING
+
+# R1: Dues have highest priority
+def test_dues_priority():
+    student = Student(
+        "S01",
+        outstanding_dues=1,
+        registered_courses={"CS201"}
+    )
+    course = Course(
+        "CS201",
+        3,
+        30,
+        prerequisites={"CS101"}
+    )
+
+    assert registration_decision(student, course) == "DUES_BLOCK"
+
+
+
+# R2: Duplicate registration has second priority
+def test_duplicate_registration_priority():
+    student = Student(
+        "S01",
+        registered_courses={"CS201"}
+    )
+    course = Course(
+        "CS201",
+        3,
+        30,
+        prerequisites={"CS101"}
+    )
+
+    assert registration_decision(student, course) == "ALREADY_REGISTERED"
+
+# R3: Missing prerequisites
+def test_missing_prerequisites_priority():
+    student = Student("S01", current_credits=18)
+    course = Course(
+        "CS201",
+        3,
+        30,
+        enrolled=30,
+        prerequisites={"CS101"}
+    )
+
+    assert registration_decision(student, course) == "PREREQUISITES_MISSING"
+
+
+# R4: Credit limit
+def test_credit_limit_priority():
+    student = Student(
+        "S01",
+        completed_courses={"CS101"},
+        current_credits=16
+    )
+    course = Course(
+        "CS201",
+        3,
+        30,
+        enrolled=30,
+        prerequisites={"CS101"}
+    )
+
+    assert registration_decision(student, course) == "CREDIT_LIMIT"
+
+
+# R5: Successful registration decision
+def test_registered_decision():
+    student = Student("S01")
+    course = Course("CS201", 3, 30, enrolled=10)
+
+    assert registration_decision(student, course) == "REGISTERED"
+
+
+
+# R6: Waiting list decision
+def test_waitlisted_decision():
+    student = Student("S01")
+    course = Course("CS201", 3, 30, enrolled=30)
+
+    assert registration_decision(student, course) == "WAITLISTED"
