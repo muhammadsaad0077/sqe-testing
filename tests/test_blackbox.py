@@ -254,3 +254,127 @@ def test_waitlisted_decision():
     course = Course("CS201", 3, 30, enrolled=30)
 
     assert registration_decision(student, course) == "WAITLISTED"
+
+# FR-10: REGISTRATION DECISION
+# MUST NOT CHANGE OBJECT STATE
+
+
+def test_decision_does_not_change_state():
+    student = Student("S01", current_credits=6)
+    course = Course("CS201", 3, 30, enrolled=10)
+
+    result = registration_decision(student, course)
+
+    assert result == "REGISTERED"
+
+    assert student.current_credits == 6
+    assert student.registered_courses == set()
+    assert course.enrolled == 10
+
+# FR-11: SUCCESSFUL REGISTRATION
+
+def test_successful_registration():
+    student = Student("S01", current_credits=6)
+    course = Course("CS201", 3, 30, enrolled=10)
+
+    result = register_course(student, course)
+
+    assert result == "REGISTERED"
+
+    assert "CS201" in student.registered_courses
+    assert student.current_credits == 9
+    assert course.enrolled == 11
+
+
+
+# FR-12: WAITLIST REGISTRATION
+
+def test_waitlist_registration():
+    student = Student("S01")
+    course = Course("CS201", 3, 30, enrolled=30)
+
+    result = register_course(student, course)
+
+    assert result == "WAITLISTED"
+
+    assert "S01" in course.waitlist
+    assert student.current_credits == 0
+    assert student.registered_courses == set()
+    assert course.enrolled == 30
+
+
+# Student should not be added twice
+def test_duplicate_waitlist_student():
+    student = Student("S01")
+    course = Course(
+        "CS201",
+        3,
+        30,
+        enrolled=30,
+        waitlist=["S01"]
+    )
+
+    result = register_course(student, course)
+
+    assert result == "WAITLISTED"
+    assert course.waitlist.count("S01") == 1
+
+
+
+# FAILED REGISTRATION
+# MUST NOT CHANGE STATE
+
+def test_unsuccessful_registration_no_state_change():
+    student = Student("S01", current_credits=6)
+    course = Course(
+        "CS201",
+        3,
+        30,
+        prerequisites={"CS101"}
+    )
+
+    result = register_course(student, course)
+
+    assert result == "PREREQUISITES_MISSING"
+
+    assert student.current_credits == 6
+    assert student.registered_courses == set()
+    assert course.enrolled == 0
+    assert course.waitlist == []
+
+
+
+# FR-13: SUCCESSFUL WITHDRAWAL
+
+def test_successful_withdrawal():
+    student = Student(
+        "S01",
+        current_credits=9,
+        registered_courses={"CS201"}
+    )
+
+    course = Course("CS201", 3, 30, enrolled=1)
+
+    result = withdraw_course(student, course)
+
+    assert result is True
+
+    assert "CS201" not in student.registered_courses
+    assert student.current_credits == 6
+    assert course.enrolled == 0
+
+
+# FR-14: UNSUCCESSFUL WITHDRAWAL
+
+def test_unsuccessful_withdrawal():
+    student = Student("S01", current_credits=6)
+    course = Course("CS201", 3, 30, enrolled=10)
+
+    result = withdraw_course(student, course)
+
+    assert result is False
+
+    assert student.current_credits == 6
+    assert student.registered_courses == set()
+    assert course.enrolled == 10
+
