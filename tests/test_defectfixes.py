@@ -26,3 +26,19 @@ def test_combined_credits_exactly_18():
 
     assert result == True
 
+#Issue-3 - Course enrollment count is not decreased after student withdrawal
+def test_successful_withdrawal():
+    student = Student(
+        "S05",
+        registered_courses={"CS301"},
+        current_credits=3
+    )
+
+    course = Course("CS301", 3, 30, enrolled=5)
+
+    result = withdraw_course(student, course)
+
+    assert result == True
+    assert "CS301" not in student.registered_courses
+    assert student.current_credits == 0
+    assert course.enrolled == 4
