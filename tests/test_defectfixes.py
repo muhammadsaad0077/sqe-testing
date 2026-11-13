@@ -26,7 +26,27 @@ def test_combined_credits_exactly_18():
 
     assert result == True
 
-#Issue-3 - Course enrollment count is not decreased after student withdrawal
+
+#Issue-3
+def test_some_prerequisites_completed():
+    completed = {"CS101"}
+    required = {"CS101", "CS102"}
+
+    result = prerequisites_satisfied(completed, required)
+
+    assert result == False
+
+
+#Issue-4
+def test_course_full():
+    student = Student("S04")
+    course = Course("CS301", 3, 30, enrolled=30)
+
+    result = registration_decision(student, course)
+
+    assert result == "WAITLISTED"
+
+#Issue - Course enrollment count is not decreased after student withdrawal
 def test_successful_withdrawal():
     student = Student(
         "S05",
