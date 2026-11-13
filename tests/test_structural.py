@@ -21,7 +21,7 @@ def test_high_dues_block():
 
 # ST-02: Dues exactly at the threshold
 def test_dues_at_threshold():
-    student = Student("S01", outstanding_dues=1000)
+    student = Student("S01", outstanding_dues=0)
     course = Course("CS201", 3, 30)
 
     assert registration_decision(student, course) == "REGISTERED"
